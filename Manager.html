@@ -94,10 +94,16 @@
            document.getElementById(`tab-${id}`).classList.add("active");
        }
 
-       // Save all lists to localStorage
+       // Save all lists and display JSON for GitHub
        function saveLists() {
-           localStorage.setItem("scavengerHuntLists", JSON.stringify(contestants));
-           alert("All lists have been saved.");
+           // Format the contestant data as JSON
+           const dataToSave = JSON.stringify(contestants, null, 2);
+
+           // Show formatted JSON in an alert for easy copying
+           alert("Copy the following data and paste it into 'scavenger_lists.json' on GitHub:\n\n" + dataToSave);
+           
+           // Also log JSON to console for copying in case the alert cuts off the content
+           console.log("Copy this JSON for GitHub:\n", dataToSave);
        }
    </script>
 </body>
