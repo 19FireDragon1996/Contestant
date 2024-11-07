@@ -51,23 +51,9 @@
 
    <script>
        let contestantCount = 0;
-       let contestants = {}; // Store lists per contestant
+       const contestants = {}; // Store lists per contestant
 
-       // Load saved data from localStorage on page load
-       function loadSavedData() {
-           const savedData = localStorage.getItem("scavengerHuntLists");
-           if (savedData) {
-               contestants = JSON.parse(savedData);
-
-               // Recreate tabs and contents based on saved data
-               Object.keys(contestants).forEach(contestantId => {
-                   contestantCount = Math.max(contestantCount, parseInt(contestantId.split("-")[1])); // Update count
-                   createTab(contestantId, contestants[contestantId].name, contestants[contestantId].list);
-               });
-           }
-       }
-
-       // Function to add a new contestant with a custom name
+       // Add a new contestant with a custom name
        function addContestant() {
            const contestantName = prompt("Enter the contestant's name:");
            if (!contestantName) return;
@@ -75,40 +61,31 @@
            contestantCount++;
            const contestantId = `contestant-${contestantCount}`;
            contestants[contestantId] = { name: contestantName, list: "" };
-           createTab(contestantId, contestantName, "");
-           saveLists(); // Save to localStorage immediately after adding
-       }
 
-       // Function to create a tab and content for each contestant
-       function createTab(contestantId, name, list) {
-           // Create tab button
+           // Add tab button
            const tab = document.createElement("div");
            tab.classList.add("tab");
            tab.id = `tab-${contestantId}`;
-           tab.textContent = name;
+           tab.textContent = contestantName;
            tab.onclick = () => showTab(contestantId);
            document.getElementById("tabs").appendChild(tab);
 
-           // Create tab content with textarea for the scavenger list
+           // Add tab content with textarea for the scavenger list
            const tabContent = document.createElement("div");
            tabContent.classList.add("tab-content");
            tabContent.id = `content-${contestantId}`;
 
            const textarea = document.createElement("textarea");
            textarea.classList.add("scavenger-list");
-           textarea.placeholder = `Enter scavenger items for ${name}`;
-           textarea.value = list; // Load saved list content
-           textarea.oninput = () => {
-               contestants[contestantId].list = textarea.value;
-               saveLists(); // Save to localStorage on input
-           };
+           textarea.placeholder = `Enter scavenger items for ${contestantName}`;
+           textarea.oninput = () => contestants[contestantId].list = textarea.value;
            tabContent.appendChild(textarea);
 
            document.getElementById("tabContents").appendChild(tabContent);
-           showTab(contestantId); // Automatically show the new tab
+           showTab(contestantId); // Automatically show new tab
        }
 
-       // Function to show a specific tab
+       // Show a specific tab
        function showTab(id) {
            document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
            document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
@@ -122,9 +99,6 @@
            localStorage.setItem("scavengerHuntLists", JSON.stringify(contestants));
            alert("All lists have been saved.");
        }
-
-       // Load saved data when the page loads
-       window.onload = loadSavedData;
    </script>
 </body>
 </html>
