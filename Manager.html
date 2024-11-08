@@ -53,14 +53,26 @@
        let contestantCount = 0;
        const contestants = {}; // Store lists per contestant
 
-       // Add a new contestant with a custom name
-       function addContestant() {
-           const contestantName = prompt("Enter the contestant's name:");
+       // Load saved data from localStorage
+       function loadLists() {
+           const savedData = localStorage.getItem("scavengerHuntLists");
+           if (savedData) {
+               const loadedContestants = JSON.parse(savedData);
+               for (const id in loadedContestants) {
+                   const contestant = loadedContestants[id];
+                   addContestant(contestant.name, contestant.list, id);
+               }
+           }
+       }
+
+       // Add a new contestant with a custom name (or load existing contestant)
+       function addContestant(name = "", list = "", contestantId = "") {
+           const contestantName = name || prompt("Enter the contestant's name:");
            if (!contestantName) return;
 
            contestantCount++;
-           const contestantId = `contestant-${contestantCount}`;
-           contestants[contestantId] = { name: contestantName, list: "" };
+           contestantId = contestantId || `contestant-${contestantCount}`;
+           contestants[contestantId] = { name: contestantName, list: list };
 
            // Add tab button
            const tab = document.createElement("div");
@@ -78,6 +90,7 @@
            const textarea = document.createElement("textarea");
            textarea.classList.add("scavenger-list");
            textarea.placeholder = `Enter scavenger items for ${contestantName}`;
+           textarea.value = list;
            textarea.oninput = () => contestants[contestantId].list = textarea.value;
            tabContent.appendChild(textarea);
 
@@ -91,14 +104,4 @@
            document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
 
            document.getElementById(`content-${id}`).classList.add("active");
-           document.getElementById(`tab-${id}`).classList.add("active");
-       }
-
-       // Save all lists to localStorage
-       function saveLists() {
-           localStorage.setItem("scavengerHuntLists", JSON.stringify(contestants));
-           alert("All lists have been saved.");
-       }
-   </script>
-</body>
-</html>
+           document.getElementById(`
