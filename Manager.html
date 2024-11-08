@@ -60,17 +60,18 @@
 
    <script>
        let contestantCount = 0;
-       const contestants = {}; // Store lists per contestant
+       let contestants = {}; // Store lists per contestant
 
        // Load saved data from localStorage
        function loadLists() {
            const savedData = localStorage.getItem("scavengerHuntLists");
            if (savedData) {
-               const loadedContestants = JSON.parse(savedData);
-               for (const id in loadedContestants) {
-                   const contestant = loadedContestants[id];
-                   addContestant(contestant.name, contestant.list, id);
+               contestants = JSON.parse(savedData);
+               for (const id in contestants) {
+                   const contestant = contestants[id];
+                   addContestant(contestant.name, contestant.list, id, false);
                }
+               contestantCount = Object.keys(contestants).length; // Set contestant count based on loaded data
            }
        }
 
@@ -85,7 +86,8 @@
        }
 
        // Add a new contestant with a custom name (or load existing contestant)
-       function addContestant(name, list = "", contestantId = "") {
+       // SaveToStorage flag controls if data is saved after adding (skip for loading from storage)
+       function addContestant(name, list = "", contestantId = "", saveToStorage = true) {
            if (!contestantId) { // Generate unique ID if not provided
                contestantCount++;
                contestantId = `contestant-${contestantCount}`;
@@ -97,7 +99,7 @@
            tab.classList.add("tab");
            tab.id = `tab-${contestantId}`;
            tab.textContent = name;
-           tab.onclick = () => showTab(contestantId); // Click to show the tab
+           tab.onclick = () => showTab(contestantId);
            document.getElementById("tabs").appendChild(tab);
 
            // Add tab content with textarea for the scavenger list
@@ -111,6 +113,7 @@
            textarea.value = list;
            textarea.oninput = () => {
                contestants[contestantId].list = textarea.value;
+               saveLists(); // Automatically save whenever there's a change in text
            };
            tabContent.appendChild(textarea);
 
@@ -123,8 +126,11 @@
 
            document.getElementById("tabContents").appendChild(tabContent);
 
-           // Ensure the new tab is active upon creation
-           showTab(contestantId);
+           // Save immediately to localStorage if adding new contestant
+           if (saveToStorage) {
+               saveLists();
+           }
+           showTab(contestantId); // Automatically show the new tab
        }
 
        // Show a specific tab
@@ -166,7 +172,6 @@
        // Save all lists to localStorage
        function saveLists() {
            localStorage.setItem("scavengerHuntLists", JSON.stringify(contestants));
-           alert("All lists have been saved.");
        }
 
        // Export data to JSON file for use in the Viewer
@@ -182,10 +187,7 @@
        }
 
        // Load data on page load
-       window.onload = () => {
-           loadLists();
-           contestantCount = Object.keys(contestants).length; // Set contestant count based on loaded data
-       };
+       window.onload = loadLists;
    </script>
 </body>
 </html>
