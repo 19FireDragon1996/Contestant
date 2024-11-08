@@ -97,7 +97,7 @@
            tab.classList.add("tab");
            tab.id = `tab-${contestantId}`;
            tab.textContent = name;
-           tab.onclick = () => showTab(contestantId);
+           tab.onclick = () => showTab(contestantId); // Click to show the tab
            document.getElementById("tabs").appendChild(tab);
 
            // Add tab content with textarea for the scavenger list
@@ -109,7 +109,9 @@
            textarea.classList.add("scavenger-list");
            textarea.placeholder = `Enter scavenger items for ${name}`;
            textarea.value = list;
-           textarea.oninput = () => contestants[contestantId].list = textarea.value;
+           textarea.oninput = () => {
+               contestants[contestantId].list = textarea.value;
+           };
            tabContent.appendChild(textarea);
 
            // Add Remove button
@@ -180,7 +182,10 @@
        }
 
        // Load data on page load
-       window.onload = loadLists;
+       window.onload = () => {
+           loadLists();
+           contestantCount = Object.keys(contestants).length; // Set contestant count based on loaded data
+       };
    </script>
 </body>
 </html>
