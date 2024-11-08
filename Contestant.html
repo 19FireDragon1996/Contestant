@@ -41,6 +41,13 @@
            color: gray;
            text-decoration: line-through;
        }
+       .notes-section {
+           margin-top: 15px;
+       }
+       .notes-section textarea {
+           width: 100%;
+           height: 100px;
+       }
    </style>
 </head>
 <body>
@@ -107,6 +114,26 @@
                            tabContent.appendChild(itemContainer);
                        });
 
+                       // Add a notes section
+                       const notesSection = document.createElement("div");
+                       notesSection.classList.add("notes-section");
+
+                       const notesLabel = document.createElement("label");
+                       notesLabel.textContent = "Notes:";
+                       notesSection.appendChild(notesLabel);
+
+                       const notesTextarea = document.createElement("textarea");
+                       notesTextarea.placeholder = "Enter notes here...";
+                       notesTextarea.value = loadNotes(contestantId); // Load existing notes if available
+
+                       // Save notes to localStorage when they are changed
+                       notesTextarea.oninput = () => {
+                           saveNotes(contestantId, notesTextarea.value);
+                       };
+
+                       notesSection.appendChild(notesTextarea);
+                       tabContent.appendChild(notesSection);
+
                        document.getElementById("tabContents").appendChild(tabContent);
                    });
 
@@ -139,6 +166,18 @@
            const key = `${contestantId}-checkboxes`;
            const checkboxes = JSON.parse(localStorage.getItem(key)) || {};
            return checkboxes[itemIndex] || false;
+       }
+
+       // Function to save notes to localStorage
+       function saveNotes(contestantId, notes) {
+           const key = `${contestantId}-notes`;
+           localStorage.setItem(key, notes);
+       }
+
+       // Function to load notes from localStorage
+       function loadNotes(contestantId) {
+           const key = `${contestantId}-notes`;
+           return localStorage.getItem(key) || "";
        }
    </script>
 </body>
