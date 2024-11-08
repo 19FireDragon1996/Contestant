@@ -104,4 +104,17 @@
            document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
 
            document.getElementById(`content-${id}`).classList.add("active");
-           document.getElementById(`
+           document.getElementById(`tab-${id}`).classList.add("active");
+       }
+
+       // Save all lists to localStorage
+       function saveLists() {
+           localStorage.setItem("scavengerHuntLists", JSON.stringify(contestants));
+           alert("All lists have been saved.");
+       }
+
+       // Load data on page load
+       window.onload = loadLists;
+   </script>
+</body>
+</html>
