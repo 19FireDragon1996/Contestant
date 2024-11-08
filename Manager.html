@@ -33,6 +33,14 @@
            height: 200px;
            margin-top: 10px;
        }
+       .remove-button {
+           margin-top: 10px;
+           padding: 5px 10px;
+           background-color: red;
+           color: white;
+           cursor: pointer;
+           border: none;
+       }
    </style>
 </head>
 <body>
@@ -48,7 +56,7 @@
    <div id="tabContents"></div>
    <button onclick="addNewContestant()">Add New Contestant</button>
    <button onclick="saveLists()">Save Lists</button>
-   <button onclick="exportToJSON()">Export to JSON</button> <!-- New export button -->
+   <button onclick="exportToJSON()">Export to JSON</button>
 
    <script>
        let contestantCount = 0;
@@ -103,6 +111,13 @@
            textarea.oninput = () => contestants[contestantId].list = textarea.value;
            tabContent.appendChild(textarea);
 
+           // Add Remove button
+           const removeButton = document.createElement("button");
+           removeButton.classList.add("remove-button");
+           removeButton.textContent = "Remove Contestant";
+           removeButton.onclick = () => removeContestant(contestantId);
+           tabContent.appendChild(removeButton);
+
            document.getElementById("tabContents").appendChild(tabContent);
            showTab(contestantId); // Automatically show new tab
        }
@@ -114,6 +129,27 @@
 
            document.getElementById(`content-${id}`).classList.add("active");
            document.getElementById(`tab-${id}`).classList.add("active");
+       }
+
+       // Remove a contestant by ID
+       function removeContestant(contestantId) {
+           if (!confirm("Are you sure you want to remove this contestant?")) return;
+
+           // Remove from UI
+           document.getElementById(`tab-${contestantId}`).remove();
+           document.getElementById(`content-${contestantId}`).remove();
+
+           // Remove from contestants object
+           delete contestants[contestantId];
+
+           // Save updated list to localStorage
+           saveLists();
+
+           // Show the first tab if any contestants remain
+           const remainingTabs = document.querySelectorAll(".tab");
+           if (remainingTabs.length > 0) {
+               showTab(remainingTabs[0].id.replace("tab-", ""));
+           }
        }
 
        // Save all lists to localStorage
