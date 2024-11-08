@@ -48,6 +48,7 @@
    <div id="tabContents"></div>
    <button onclick="addNewContestant()">Add New Contestant</button>
    <button onclick="saveLists()">Save Lists</button>
+   <button onclick="exportToJSON()">Export to JSON</button> <!-- New export button -->
 
    <script>
        let contestantCount = 0;
@@ -119,6 +120,18 @@
        function saveLists() {
            localStorage.setItem("scavengerHuntLists", JSON.stringify(contestants));
            alert("All lists have been saved.");
+       }
+
+       // Export data to JSON file for use in the Viewer
+       function exportToJSON() {
+           const dataStr = JSON.stringify(contestants, null, 2); // JSON with indentation for readability
+           const blob = new Blob([dataStr], { type: "application/json" });
+           const url = URL.createObjectURL(blob);
+           const a = document.createElement("a");
+           a.href = url;
+           a.download = "scavengerHuntLists.json";
+           a.click();
+           URL.revokeObjectURL(url);
        }
 
        // Load data on page load
