@@ -57,62 +57,65 @@
    <div id="tabContents"></div>
 
    <script>
-       // Load contestant lists from localStorage
-       const savedData = JSON.parse(localStorage.getItem("scavengerHuntLists"));
-       if (savedData) {
-           Object.keys(savedData).forEach(contestantId => {
-               const contestant = savedData[contestantId];
+       // Load contestant lists from JSON file on GitHub
+       fetch("https://raw.githubusercontent.com/19FireDragon1996/Contestant/main/scavengerHuntLists.json")
+           .then(response => response.json())
+           .then(savedData => {
+               if (savedData) {
+                   Object.keys(savedData).forEach(contestantId => {
+                       const contestant = savedData[contestantId];
 
-               // Create tab button
-               const tab = document.createElement("div");
-               tab.classList.add("tab");
-               tab.id = `tab-${contestantId}`;
-               tab.textContent = contestant.name;
-               tab.onclick = () => showTab(contestantId);
-               document.getElementById("tabs").appendChild(tab);
+                       // Create tab button
+                       const tab = document.createElement("div");
+                       tab.classList.add("tab");
+                       tab.id = `tab-${contestantId}`;
+                       tab.textContent = contestant.name;
+                       tab.onclick = () => showTab(contestantId);
+                       document.getElementById("tabs").appendChild(tab);
 
-               // Create interactive tab content with checkboxes
-               const tabContent = document.createElement("div");
-               tabContent.classList.add("tab-content");
-               tabContent.id = `content-${contestantId}`;
+                       // Create interactive tab content with checkboxes
+                       const tabContent = document.createElement("div");
+                       tabContent.classList.add("tab-content");
+                       tabContent.id = `content-${contestantId}`;
 
-               // Split list items by new lines and display each with a checkbox
-               const items = contestant.list.split("\n").filter(item => item.trim() !== "");
-               items.forEach((item, index) => {
-                   const itemContainer = document.createElement("div");
-                   itemContainer.classList.add("scavenger-item");
+                       // Split list items by new lines and display each with a checkbox
+                       const items = contestant.list.split("\n").filter(item => item.trim() !== "");
+                       items.forEach((item, index) => {
+                           const itemContainer = document.createElement("div");
+                           itemContainer.classList.add("scavenger-item");
 
-                   const checkbox = document.createElement("input");
-                   checkbox.type = "checkbox";
-                   checkbox.id = `${contestantId}-item-${index}`;
-                   checkbox.checked = loadCheckboxState(contestantId, index);
+                           const checkbox = document.createElement("input");
+                           checkbox.type = "checkbox";
+                           checkbox.id = `${contestantId}-item-${index}`;
+                           checkbox.checked = loadCheckboxState(contestantId, index);
 
-                   // Apply completed style if already checked
-                   if (checkbox.checked) itemContainer.classList.add("completed");
+                           // Apply completed style if already checked
+                           if (checkbox.checked) itemContainer.classList.add("completed");
 
-                   // Save checkbox state and apply styling on change
-                   checkbox.onchange = () => {
-                       saveCheckboxState(contestantId, index, checkbox.checked);
-                       itemContainer.classList.toggle("completed", checkbox.checked);
-                   };
+                           // Save checkbox state and apply styling on change
+                           checkbox.onchange = () => {
+                               saveCheckboxState(contestantId, index, checkbox.checked);
+                               itemContainer.classList.toggle("completed", checkbox.checked);
+                           };
 
-                   const label = document.createElement("label");
-                   label.htmlFor = checkbox.id;
-                   label.textContent = item;
+                           const label = document.createElement("label");
+                           label.htmlFor = checkbox.id;
+                           label.textContent = item;
 
-                   itemContainer.appendChild(checkbox);
-                   itemContainer.appendChild(label);
-                   tabContent.appendChild(itemContainer);
-               });
+                           itemContainer.appendChild(checkbox);
+                           itemContainer.appendChild(label);
+                           tabContent.appendChild(itemContainer);
+                       });
 
-               document.getElementById("tabContents").appendChild(tabContent);
+                       document.getElementById("tabContents").appendChild(tabContent);
+                   });
+
+                   // Show the first tab by default
+                   showTab(Object.keys(savedData)[0]);
+               } else {
+                   document.body.innerHTML = "<h2>No scavenger hunt lists found. Please check with the organizer.</h2>";
+               }
            });
-
-           // Show the first tab by default
-           showTab(Object.keys(savedData)[0]);
-       } else {
-           document.body.innerHTML = "<h2>No scavenger hunt lists found. Please check with the organizer.</h2>";
-       }
 
        // Function to show a specific tab
        function showTab(id) {
