@@ -3,7 +3,7 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Scavenger Hunt - Stream Viewer</title>
+   <title>Scavenger Hunt - Contestant Viewer</title>
    <style>
        .tab-container {
            display: flex;
@@ -29,68 +29,108 @@
            display: block;
        }
        .scavenger-item {
+           display: flex;
+           align-items: center;
            margin-top: 5px;
        }
-       /* Style for completed items (when item is checked/completed) */
-       .scavenger-item.completed {
+       .scavenger-item input[type="checkbox"] {
+           margin-right: 10px;
+       }
+       /* Style for completed items (when checkbox is checked) */
+       .scavenger-item.completed label {
            color: gray;
            text-decoration: line-through;
        }
    </style>
 </head>
 <body>
+<script>
+    let password = prompt("Enter the password to access this page:");
+    if (password !== "ScavContest") {
+        alert("Access denied!");
+        window.location.href = "your-public-page.html"; // Redirects to a public page if the password is incorrect
+    }
+</script>
 
-   <h1>Scavenger Hunt - Stream Viewer</h1>
+   <h1>Scavenger Hunt - Contestant Viewer</h1>
    <div class="tab-container" id="tabs"></div>
    <div id="tabContents"></div>
 
    <script>
-       // Load contestant lists from localStorage
-       const savedData = JSON.parse(localStorage.getItem("scavengerHuntLists"));
-       if (savedData) {
-           Object.keys(savedData).forEach(contestantId => {
-               const contestant = savedData[contestantId];
+       // Load contestant lists from JSON file on GitHub
+       fetch("https://raw.githubusercontent.com/19FireDragon1996/Contestant/main/scavengerHuntLists.json")
+           .then(response => {
+               if (!response.ok) {
+                   throw new Error(`HTTP error! Status: ${response.status}`);
+               }
+               return response.json();
+           })
+           .then(savedData => {
+               console.log("Data loaded:", savedData); // Debugging log for loaded data
 
-               // Create tab button
-               const tab = document.createElement("div");
-               tab.classList.add("tab");
-               tab.id = `tab-${contestantId}`;
-               tab.textContent = contestant.name;
-               tab.onclick = () => showTab(contestantId);
-               document.getElementById("tabs").appendChild(tab);
+               if (savedData) {
+                   Object.keys(savedData).forEach(contestantId => {
+                       const contestant = savedData[contestantId];
+                       console.log(`Loading contestant: ${contestantId}`, contestant); // Debugging log per contestant
 
-               // Create read-only tab content without checkboxes
-               const tabContent = document.createElement("div");
-               tabContent.classList.add("tab-content");
-               tabContent.id = `content-${contestantId}`;
+                       // Create tab button
+                       const tab = document.createElement("div");
+                       tab.classList.add("tab");
+                       tab.id = `tab-${contestantId}`;
+                       tab.textContent = contestant.name;
+                       tab.onclick = () => showTab(contestantId);
+                       document.getElementById("tabs").appendChild(tab);
 
-               // Split list items by new lines and display each item, styled based on completion status
-               const items = contestant.list.split("\n").filter(item => item.trim() !== "");
-               items.forEach((item, index) => {
-                   const itemContainer = document.createElement("div");
-                   itemContainer.classList.add("scavenger-item");
+                       // Create interactive tab content with checkboxes
+                       const tabContent = document.createElement("div");
+                       tabContent.classList.add("tab-content");
+                       tabContent.id = `content-${contestantId}`;
 
-                   // Load and apply completion status
-                   if (loadCheckboxState(contestantId, index)) {
-                       itemContainer.classList.add("completed"); // Apply completed style
-                   }
+                       // Split list items by new lines and display each with a checkbox
+                       const items = contestant.list.split("\n").filter(item => item.trim() !== "");
+                       items.forEach((item, index) => {
+                           console.log(`Adding item for ${contestantId}: ${item}`); // Debugging log for each list item
+                           
+                           const itemContainer = document.createElement("div");
+                           itemContainer.classList.add("scavenger-item");
 
-                   // Display item text
-                   const label = document.createElement("span");
-                   label.textContent = item;
+                           const checkbox = document.createElement("input");
+                           checkbox.type = "checkbox";
+                           checkbox.id = `${contestantId}-item-${index}`;
+                           checkbox.checked = loadCheckboxState(contestantId, index);
 
-                   itemContainer.appendChild(label);
-                   tabContent.appendChild(itemContainer);
-               });
+                           // Apply completed style if already checked
+                           if (checkbox.checked) itemContainer.classList.add("completed");
 
-               document.getElementById("tabContents").appendChild(tabContent);
+                           // Save checkbox state and apply styling on change
+                           checkbox.onchange = () => {
+                               saveCheckboxState(contestantId, index, checkbox.checked);
+                               itemContainer.classList.toggle("completed", checkbox.checked);
+                           };
+
+                           const label = document.createElement("label");
+                           label.htmlFor = checkbox.id;
+                           label.textContent = item;
+
+                           itemContainer.appendChild(checkbox);
+                           itemContainer.appendChild(label);
+                           tabContent.appendChild(itemContainer);
+                       });
+
+                       document.getElementById("tabContents").appendChild(tabContent);
+                   });
+
+                   // Show the first tab by default
+                   showTab(Object.keys(savedData)[0]);
+               } else {
+                   console.warn("No data found in JSON."); // Log warning if data is missing
+                   document.body.innerHTML = "<h2>No scavenger hunt lists found. Please check with the organizer.</h2>";
+               }
+           })
+           .catch(error => {
+               console.error("Failed to load JSON data:", error);
+               document.body.innerHTML = "<h2>Error loading scavenger hunt lists. Please check the JSON file.</h2>";
            });
-
-           // Show the first tab by default
-           showTab(Object.keys(savedData)[0]);
-       } else {
-           document.body.innerHTML = "<h2>No scavenger hunt lists found. Please check with the organizer.</h2>";
-       }
 
        // Function to show a specific tab
        function showTab(id) {
@@ -101,7 +141,15 @@
            document.getElementById(`tab-${id}`).classList.add("active");
        }
 
-       // Function to load the state of a checkbox (completion status)
+       // Function to save the state of a checkbox
+       function saveCheckboxState(contestantId, itemIndex, isChecked) {
+           const key = `${contestantId}-checkboxes`;
+           const checkboxes = JSON.parse(localStorage.getItem(key)) || {};
+           checkboxes[itemIndex] = isChecked;
+           localStorage.setItem(key, JSON.stringify(checkboxes));
+       }
+
+       // Function to load the state of a checkbox
        function loadCheckboxState(contestantId, itemIndex) {
            const key = `${contestantId}-checkboxes`;
            const checkboxes = JSON.parse(localStorage.getItem(key)) || {};
